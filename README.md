@@ -15,8 +15,9 @@ The active installer supports both, but **they are not yet merged into a unified
 ## Requirements
 OpenOS, Internet Card with working access to jsDelivr, GPU, screen at least 60x22, keyboard and a writable disk mounted at /home. Requirements may change as graphics support is developed.
 
-## Install / update
-From the OpenOS shell:
+## Repeatable versioned install / update (installer 0.8.0)
+Use the **jsDelivr CDN**. Download a fresh installer when a new release is published:
+
 ```sh
 rm /home/nova-install.lua
 wget https://cdn.jsdelivr.net/gh/Madusanka2013-hub/NovaOS@main/install.lua /home/nova-install.lua
@@ -24,12 +25,17 @@ lua /home/nova-install.lua
 lua /home/nova.lua
 ```
 
-Run the older functional app prototype instead:
+Other commands:
 ```sh
+lua /home/nova-install.lua status
+lua /home/nova-install.lua rollback
+lua /home/nova-install.lua force
 lua /home/nova.lua apps
 ```
 
-The installer downloads the main-branch Lua sources via jsDelivr CDN, stores backups of replaced files under `/home/novaos/*.bak`, and leaves OpenOS boot alone. If download fails, already installed files are left untouched. Backup is per file; it is not a transactional rollback of the entire install.
+The installer stores runnable files in `/home/novaos/versions/0.8.0/`, and records the active and previous versions in `current.version` and `previous.version`. Reinstalling the same version is harmless. Updating to a newer release leaves the previous version available for rollback. It downloads all app files and validates Lua syntax before activating. It does **not** replace OpenOS, remove user files or modify legacy `/home/novaos/boot.lua`.
+
+Version 0.8.0 refers to **installer/update infrastructure**, not a completed desktop. CDN branch URLs can be cached; for future immutable releases, pin each published version to a Git commit/tag. No in-game verification has been completed.
 
 ## Limitations
 - GPU rendering currently uses text cells; no image-backed XP icons.

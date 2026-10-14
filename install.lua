@@ -1,66 +1,125 @@
--- NovaOS installer/updater for OpenComputers Modernized (OpenOS).
--- Keeps OpenOS boot intact. Never installs a new EEPROM or bootloader.
+-- NovaOS versioned installer/updater 0.8.0 (OpenOS).
+-- Run: lua /home/nova-install.lua [install|status|rollback|force]
+-- Runtime versions stored under /home/novaos/versions/<version>/
 local fs = require("filesystem")
 local internet = require("internet")
-local base = "https://cdn.jsdelivr.net/gh/Madusanka2013-hub/NovaOS@main/"
-local home = "/home/novaos"
-assert(fs.isDirectory("/home"), "Writable OpenOS /home required")
-assert(fs.makeDirectory(home) or fs.isDirectory(home), "Cannot create NovaOS directory")
+local VERSION = "0.8.0"
+local URL = "https://cdn.jsdelivr.net/gh/Madusanka2013-hub/NovaOS@main/"
+local ROOT = "/home/novaos"
+local VERSIONS = ROOT .. "/versions"
+local CURRENT = ROOT .. "/current.version"
+local PREVIOUS = ROOT .. "/previous.version"
+local action = (...) or "install"
+
+local function exists(path) return fs.exists(path) end
+local function read(path)
+  local f = io.open(path, "rb")
+  if not f then return nil end
+  local data = f:read("*a")
+  f:close()
+  return data
+end
+local function write(path, data)
+  local file, err = io.open(path, "wb")
+  assert(file, err or ("Cannot write " .. path))
+  assert(file:write(data))
+  file:close()
+end
+local function version(s)
+  if s then return (s:match("^%s*([%w%.%-]+)")) end
+end
+local function installDir(v) return VERSIONS .. "/" .. v end
+local function ready(v)
+  return v and exists(installDir(v) .. "/xp_visual07.lua") and exists(installDir(v) .. "/xp05.lua")
+end
+local function activate(v)
+  assert(ready(v), "Version incomplete: " .. tostring(v))
+  local current = version(read(CURRENT))
+  if current and current ~= v then write(PREVIOUS, current .. "\n") end
+  write(CURRENT, v .. "\n")
+end
+local LAUNCHER = [[
+-- NovaOS stable launcher, controlled by current.version
+local fs = require("filesystem")
+local f = assert(io.open("/home/novaos/current.version","r"),"NovaOS not installed")
+local v = assert(f:read("*l"),"NovaOS version is missing")
+f:close()
+assert(v:match("^[%w%.%-]+$"),"Invalid NovaOS version")
+local mode = ...
+local name = mode == "apps" and "xp05.lua" or "xp_visual07.lua"
+dofile("/home/novaos/versions/" .. v .. "/" .. name)
+]]
+local function makeLauncher()
+  write("/home/nova.lua", LAUNCHER)
+end
+
+if action == "status" then
+  print("NovaOS installed: " .. tostring(version(read(CURRENT)) or "none"))
+  print("NovaOS installer: " .. VERSION)
+  print("Rollback version: " .. tostring(version(read(PREVIOUS)) or "none"))
+  return
+elseif action == "rollback" then
+  local previous = version(read(PREVIOUS))
+  assert(ready(previous), "No complete previous version for rollback")
+  local current = version(read(CURRENT))
+  write(CURRENT, previous .. "\n")
+  if current and current ~= previous then write(PREVIOUS, current .. "\n") end
+  makeLauncher()
+  print("NovaOS restored to " .. previous)
+  return
+elseif action ~= "install" and action ~= "force" then
+  error("Usage: lua /home/nova-install.lua [install|status|rollback|force]")
+end
+
+assert(fs.isDirectory("/home"), "OpenOS /home missing")
+assert(fs.makeDirectory(ROOT) or fs.isDirectory(ROOT), "Cannot create NovaOS root")
+assert(fs.makeDirectory(VERSIONS) or fs.isDirectory(VERSIONS), "Cannot create versions folder")
+if ready(VERSION) and action ~= "force" then
+  activate(VERSION)
+  makeLauncher()
+  print("NovaOS " .. VERSION .. " already installed; launcher refreshed.")
+  print("Run: lua /home/nova.lua")
+  return
+end
 
 local files = {
-  {"desktop/xp_visual07.lua", home .. "/xp_visual07.lua"},
-  {"system/xp05.lua", home .. "/xp05.lua"}
+  {"desktop/xp_visual07.lua", "xp_visual07.lua"},
+  {"system/xp05.lua", "xp05.lua"}
 }
-local function download(source)
-  local request, err = internet.request(base .. source .. "?nova_update=1")
-  assert(request, "Download failed for " .. source .. ": " .. tostring(err))
-  local chunks, bytes = {}, 0
-  for chunk in request do
-    chunks[#chunks + 1] = chunk
-    bytes = bytes + #chunk
-    assert(bytes < 512 * 1024, "File too large: " .. source)
-  end
-  assert(bytes > 0, "Empty download: " .. source)
-  return table.concat(chunks)
-end
-local function save(path, data)
-  local tmp = path .. ".download"
-  local file, err = io.open(tmp, "wb")
-  assert(file, tostring(err))
-  file:write(data)
-  file:close()
-  -- Preserve the old working version until the new file has downloaded.
-  if fs.exists(path) then
-    if fs.exists(path .. ".bak") then assert(fs.remove(path .. ".bak")) end
-    assert(fs.rename(path, path .. ".bak"), "Backup failed: " .. path)
-  end
-  local ok = fs.rename(tmp, path)
-  if not ok then
-    if fs.exists(path .. ".bak") then fs.rename(path .. ".bak", path) end
-    error("Install failed: " .. path)
-  end
-end
-
--- Download everything before touching installed files.
-local payloads = {}
-for _, entry in ipairs(files) do
+local payload = {}
+for i, entry in ipairs(files) do
+  local url = URL .. entry[1] .. "?nova_version=" .. VERSION
   print("Downloading " .. entry[1])
-  payloads[#payloads + 1] = download(entry[1])
+  local request, err = internet.request(url)
+  assert(request, "Download error: " .. tostring(err))
+  local chunks, size = {}, 0
+  for part in request do
+    size = size + #part
+    assert(size <= 512 * 1024, "Download exceeds size limit")
+    chunks[#chunks+1] = part
+  end
+  payload[i] = table.concat(chunks)
+  assert(#payload[i] > 20, "Incomplete download: " .. entry[1])
+  assert(not payload[i]:find("<!DOCTYPE",1,true) and not payload[i]:find("<html",1,true),"Server returned HTML, not Lua")
+  local loader, syntaxError = load(payload[i], "=" .. entry[1], "t")
+  assert(loader, "Invalid Lua file: " .. tostring(syntaxError))
 end
-for i, entry in ipairs(files) do save(entry[2], payloads[i]) end
-
-local launcher = [[
--- NovaOS launcher: standard XP preview; "apps" for the functional app prototype.
-local mode = ...
-if mode == "apps" then
-  dofile("/home/novaos/xp05.lua")
-else
-  dofile("/home/novaos/xp_visual07.lua")
+local dir = installDir(VERSION)
+assert(fs.makeDirectory(dir) or fs.isDirectory(dir), "Cannot create version directory")
+for i, entry in ipairs(files) do
+  local file = dir .. "/" .. entry[2]
+  write(file .. ".new", payload[i])
 end
-]]
-save("/home/nova.lua", launcher)
-print("NovaOS installation/update completed.")
-print("Visual desktop: lua /home/nova.lua")
-print("App prototype:   lua /home/nova.lua apps")
-print("Backups of replaced files are kept as .bak")
-print("OpenOS boot and your personal files are unchanged.")
+for _, entry in ipairs(files) do
+  local file = dir .. "/" .. entry[2]
+  if exists(file) then assert(fs.remove(file), "Cannot replace " .. file) end
+  assert(fs.rename(file .. ".new", file), "Cannot activate " .. file)
+end
+activate(VERSION)
+makeLauncher()
+print("NovaOS " .. VERSION .. " installed successfully")
+print("Start:      lua /home/nova.lua")
+print("Apps demo:  lua /home/nova.lua apps")
+print("Status:     lua /home/nova-install.lua status")
+print("Rollback:   lua /home/nova-install.lua rollback")
+print("Legacy /home/novaos/boot.lua is NOT modified.")

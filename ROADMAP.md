@@ -66,3 +66,12 @@ Funktionalen älteren App-Prototyp starten: `lua /home/nova.lua apps`.
 Die bisherigen Dateien liegen vor einer Ersetzung als `.bak` vor. Dies ist **kein** Bootloader-Ersatz.
 
 Hinweis: jsDelivr kann @main-Dateien zwischenspeichern. Für reproduzierbare Releases später Commit-SHA oder Versionstag verwenden.
+
+## Installer-Meilenstein 0.8.0
+- [x] Versionierte Installationsverzeichnisse unter `/home/novaos/versions/`.
+- [x] Wiederholbare Installation und Wechsel der aktiven Version.
+- [x] Befehle `status`, `rollback`, `force`.
+- [x] jsDelivr statt raw.githubusercontent.com.
+- [ ] Release-Dateien pro Version auf unveränderlichen Git-Commit oder Tag pinnen.
+- [ ] Minecraft-Ingame-Test der Download-/Rollbackpfade.
+- [ ] Vorhandenen Legacy-Autostart `/home/novaos/boot.lua` gesondert diagnostizieren und reparieren.
