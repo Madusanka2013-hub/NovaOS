@@ -13,13 +13,13 @@ The repository still contains **two separate alpha prototypes**, not a completed
 The active installer supports both, but **they are not yet merged into a unified desktop**. Do not mistake text-cell artwork for real icons. We are investigating a graphics backend / NeoForge addon for image assets.
 
 ## Requirements
-OpenOS, Internet Card with working access to GitHub, GPU, screen at least 60x22, keyboard and a writable disk mounted at /home. Requirements may change as graphics support is developed.
+OpenOS, Internet Card with working access to jsDelivr, GPU, screen at least 60x22, keyboard and a writable disk mounted at /home. Requirements may change as graphics support is developed.
 
 ## Install / update
 From the OpenOS shell:
 ```sh
 rm /home/nova-install.lua
-wget https://raw.githubusercontent.com/Madusanka2013-hub/NovaOS/main/install.lua /home/nova-install.lua
+wget https://cdn.jsdelivr.net/gh/Madusanka2013-hub/NovaOS@main/install.lua /home/nova-install.lua
 lua /home/nova-install.lua
 lua /home/nova.lua
 ```
@@ -29,7 +29,7 @@ Run the older functional app prototype instead:
 lua /home/nova.lua apps
 ```
 
-The installer downloads the current main-branch Lua sources, stores backups of replaced files under `/home/novaos/*.bak`, and leaves OpenOS boot alone. If download fails, already installed files are left untouched. Backup is per file; it is not a transactional rollback of the entire install.
+The installer downloads the main-branch Lua sources via jsDelivr CDN, stores backups of replaced files under `/home/novaos/*.bak`, and leaves OpenOS boot alone. If download fails, already installed files are left untouched. Backup is per file; it is not a transactional rollback of the entire install.
 
 ## Limitations
 - GPU rendering currently uses text cells; no image-backed XP icons.
@@ -39,3 +39,5 @@ The installer downloads the current main-branch Lua sources, stores backups of r
 
 ## Development
 Implement and validate the hardware/graphics layer first, then complete the XP desktop and taskbar as **Phase 1**. Avoid unrelated new applications until Phase 1 passes manual in-game acceptance testing.
+
+**Note:** jsDelivr caches branch-based links. Fresh changes on main can take time to reach the CDN. For reproducible production releases, use a pinned commit or release tag.
