@@ -1,7 +1,7 @@
 -- NovaOS safe installer for OpenOS
 local fs=require("filesystem")
 local internet=require("internet")
-local root="https://cdn.jsdelivr.net/gh/Madusanka2013-hub/NovaOS@46759231012d6439b86c8bed0ec088beb8939080/"
+local root="https://cdn.jsdelivr.net/gh/Madusanka2013-hub/NovaOS@d38372f734e25a06be22b3bb59ad9f87b0b11239/"
 assert(fs.isDirectory("/home"),"Requires a writable OpenOS /home")
 fs.makeDirectory("/home/novaos")
 local function fetch(name,to)
@@ -19,9 +19,9 @@ local function fetch(name,to)
   if fs.exists(to) then assert(fs.remove(to),"Cannot replace "..to) end
   assert(fs.rename(temp,to),"Cannot move file into place")
 end
-fetch("system/xp04.lua","/home/novaos/xp04.lua")
+fetch("system/xp05.lua","/home/novaos/xp05.lua")
 local f=assert(io.open("/home/nova.lua","w"))
-f:write('dofile("/home/novaos/xp04.lua")\n')
+f:write('dofile("/home/novaos/xp05.lua")\n')
 f:close()
 print("NovaOS installed. Run: lua /home/nova.lua")
 print("Your OpenOS installation has not been replaced.")
