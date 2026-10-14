@@ -7,7 +7,15 @@ if not gpu or not component.isAvailable("screen") then error("GPU or screen miss
 gpu.bind(component.screen.address)
 local mw,mh=gpu.maxResolution()
 local w,h=math.min(mw,100),math.min(mh,32)
-assert(gpu.setResolution(w,h))
+-- Resolution changes may return nil or fail on some Modernized GPUs.
+-- Keep the current valid resolution if the request cannot be applied.
+local changed, result = pcall(gpu.setResolution,w,h)
+if not changed or result==false then
+  w,h=gpu.getResolution()
+else
+  w,h=gpu.getResolution()
+end
+if w<40 or h<16 then error("NovaOS needs at least 40x16 screen cells") end
 local colors={bg=0x101723,panel=0x192638,bar=0x27384C,fg=0xE9F1FA,muted=0x92A8BD,accent=0x35B8F7,ok=0x65DCA6}
 local tabs={"Desktop","Files","Terminal","Hardware","Settings"}
 local selected=1
