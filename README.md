@@ -1,25 +1,41 @@
-# NovaOS XP Edition 0.3.0
+# NovaOS – Windows XP Edition
 
-Resource-conscious Windows XP-inspired Lua desktop preview for OpenComputers: Modernized 1.21.1.
+NovaOS is a **Windows-XP-inspired desktop project for OpenComputers Modernized 1.21.1 (NeoForge)**, currently hosted within OpenOS.
 
-**Requirements:** OpenOS, Internet Card, GPU, screen at least 50x18, keyboard, disk. Works as an OpenOS-hosted app, not a replacement boot OS.
+**Project direction:** an authentic XP look and interaction model with real graphic assets, responsive rendering, an integrated desktop, start menu, taskbar, window manager and eventually a coherent application runtime. See [ROADMAP.md](ROADMAP.md).
 
-## Install
+## Current status
+The repository still contains **two separate alpha prototypes**, not a completed OS:
+
+- `desktop/xp_visual07.lua`: visual XP-style desktop and start menu. No real image assets or full app runtime yet.
+- `system/xp05.lua`: earlier application prototype with windows, explorer-like view, editor, terminal and system screens. UI still uses text-cell graphics.
+
+The active installer supports both, but **they are not yet merged into a unified desktop**. Do not mistake text-cell artwork for real icons. We are investigating a graphics backend / NeoForge addon for image assets.
+
+## Requirements
+OpenOS, Internet Card with working access to GitHub, GPU, screen at least 60x22, keyboard and a writable disk mounted at /home. Requirements may change as graphics support is developed.
+
+## Install / update
+From the OpenOS shell:
 ```sh
-wget https://cdn.jsdelivr.net/gh/Madusanka2013-hub/NovaOS@1918d2329580934c209deff3b675ff7382b5b9db/install.lua /home/nova-install.lua
+rm /home/nova-install.lua
+wget https://raw.githubusercontent.com/Madusanka2013-hub/NovaOS/main/install.lua /home/nova-install.lua
 lua /home/nova-install.lua
 lua /home/nova.lua
 ```
-Remove the old /home/nova-install.lua before downloading if wget says it already exists.
 
-## Apps
-Start menu, XP-like window borders, taskbar, file explorer, My Documents, terminal, temporary Notepad, control panel and free-memory monitor.
+Run the older functional app prototype instead:
+```sh
+lua /home/nova.lua apps
+```
 
-## Controls
-Click desktop icons, green START or title bar controls. Drag title bars to move. Keyboard 1-7 opens an app when not entering text. Ctrl+C exits via OpenOS interrupt.
+The installer downloads the current main-branch Lua sources, stores backups of replaced files under `/home/novaos/*.bak`, and leaves OpenOS boot alone. If download fails, already installed files are left untouched. Backup is per file; it is not a transactional rollback of the entire install.
 
 ## Limitations
-Notepad text is currently session-only. The clock displays session uptime, not world time. No actual multitasking, persistent desktop settings, full filesystem operations or independent boot kernel yet. This is an untested in-game alpha.
+- GPU rendering currently uses text cells; no image-backed XP icons.
+- The two prototypes are not integrated.
+- There is no independent kernel, Windows API compatibility or Windows executable support.
+- Runtime behavior has not yet been verified in Minecraft for this update.
 
-## Performance
-Event-driven rendering, no animation or image assets. Redraws happen on input and minute updates. Maximum four app windows.
+## Development
+Implement and validate the hardware/graphics layer first, then complete the XP desktop and taskbar as **Phase 1**. Avoid unrelated new applications until Phase 1 passes manual in-game acceptance testing.
