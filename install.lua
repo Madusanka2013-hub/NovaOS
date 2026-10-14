@@ -1,27 +1,66 @@
--- NovaOS safe installer for OpenOS
-local fs=require("filesystem")
-local internet=require("internet")
-local root="https://cdn.jsdelivr.net/gh/Madusanka2013-hub/NovaOS@56259281e6289ca87a21143cc15769b2ece8e07a/"
-assert(fs.isDirectory("/home"),"Requires a writable OpenOS /home")
-fs.makeDirectory("/home/novaos")
-local function fetch(name,to)
-  io.write("Downloading "..name.."\n")
-  local response,why=internet.request(root..name)
-  assert(response,why or "No internet")
-  local buffer={}
-  for chunk in response do buffer[#buffer+1]=chunk end
-  local data=table.concat(buffer)
-  assert(#data>0,"Empty download for "..name)
-  local temp=to..".tmp"
-  local f,err=io.open(temp,"wb")
-  assert(f,err)
-  f:write(data);f:close()
-  if fs.exists(to) then assert(fs.remove(to),"Cannot replace "..to) end
-  assert(fs.rename(temp,to),"Cannot move file into place")
+-- NovaOS installer/updater for OpenComputers Modernized (OpenOS).
+-- Keeps OpenOS boot intact. Never installs a new EEPROM or bootloader.
+local fs = require("filesystem")
+local internet = require("internet")
+local base = "https://raw.githubusercontent.com/Madusanka2013-hub/NovaOS/main/"
+local home = "/home/novaos"
+assert(fs.isDirectory("/home"), "Writable OpenOS /home required")
+assert(fs.makeDirectory(home) or fs.isDirectory(home), "Cannot create NovaOS directory")
+
+local files = {
+  {"desktop/xp_visual07.lua", home .. "/xp_visual07.lua"},
+  {"system/xp05.lua", home .. "/xp05.lua"}
+}
+local function download(source)
+  local request, err = internet.request(base .. source .. "?nova_update=1")
+  assert(request, "Download failed for " .. source .. ": " .. tostring(err))
+  local chunks, bytes = {}, 0
+  for chunk in request do
+    chunks[#chunks + 1] = chunk
+    bytes = bytes + #chunk
+    assert(bytes < 512 * 1024, "File too large: " .. source)
+  end
+  assert(bytes > 0, "Empty download: " .. source)
+  return table.concat(chunks)
 end
-fetch("desktop/xp_visual07.lua","/home/novaos/xp_visual07.lua")
-local f=assert(io.open("/home/nova.lua","w"))
-f:write('dofile("/home/novaos/xp_visual07.lua")\n')
-f:close()
-print("NovaOS installed. Run: lua /home/nova.lua")
-print("Your OpenOS installation has not been replaced.")
+local function save(path, data)
+  local tmp = path .. ".download"
+  local file, err = io.open(tmp, "wb")
+  assert(file, tostring(err))
+  file:write(data)
+  file:close()
+  -- Preserve the old working version until the new file has downloaded.
+  if fs.exists(path) then
+    if fs.exists(path .. ".bak") then assert(fs.remove(path .. ".bak")) end
+    assert(fs.rename(path, path .. ".bak"), "Backup failed: " .. path)
+  end
+  local ok = fs.rename(tmp, path)
+  if not ok then
+    if fs.exists(path .. ".bak") then fs.rename(path .. ".bak", path) end
+    error("Install failed: " .. path)
+  end
+end
+
+-- Download everything before touching installed files.
+local payloads = {}
+for _, entry in ipairs(files) do
+  print("Downloading " .. entry[1])
+  payloads[#payloads + 1] = download(entry[1])
+end
+for i, entry in ipairs(files) do save(entry[2], payloads[i]) end
+
+local launcher = [[
+-- NovaOS launcher: standard XP preview; "apps" for the functional app prototype.
+local mode = ...
+if mode == "apps" then
+  dofile("/home/novaos/xp05.lua")
+else
+  dofile("/home/novaos/xp_visual07.lua")
+end
+]]
+save("/home/nova.lua", launcher)
+print("NovaOS installation/update completed.")
+print("Visual desktop: lua /home/nova.lua")
+print("App prototype:   lua /home/nova.lua apps")
+print("Backups of replaced files are kept as .bak")
+print("OpenOS boot and your personal files are unchanged.")
