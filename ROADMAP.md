@@ -13,7 +13,7 @@ NovaOS ist zunächst eine OpenOS-gehostete Desktopumgebung für OpenComputers Mo
 
 ## Phase 0 – Bestand sichern und reproduzierbar installieren
 - [x] Bestehende Implementierungen inventarisieren.
-- [x] Installer bezieht Quellcode wieder aus dem aktuellen main-Zweig, statt einem eingefrorenen Commit.
+- [x] Installer bezieht Quellcode wieder aus dem aktuellen main-Zweig über jsDelivr, statt einem eingefrorenen Commit.
 - [x] Installer lädt zuerst alle Dateien und legt Backups ersetzter Dateien an.
 - [x] Visuellen Desktop und funktionalen App-Prototyp getrennt ausführbar machen.
 - [ ] Hardware-/Kompatibilitätsmatrix für Modernized: Grafiktiefe, Auflösung, Speicher, Bild-APIs.
@@ -49,7 +49,7 @@ NovaOS ist zunächst eine OpenOS-gehostete Desktopumgebung für OpenComputers Mo
 Benötigt: beschreibbares /home, Internetkarte mit funktionierender Verbindung, GPU, Bildschirm und Tastatur.
 
 ```sh
-wget -f https://raw.githubusercontent.com/Madusanka2013-hub/NovaOS/main/install.lua /home/nova-install.lua
+wget -f https://cdn.jsdelivr.net/gh/Madusanka2013-hub/NovaOS@main/install.lua /home/nova-install.lua
 lua /home/nova-install.lua
 lua /home/nova.lua
 ```
@@ -57,10 +57,12 @@ lua /home/nova.lua
 Falls `wget -f` in deiner OpenOS-Version nicht unterstützt wird:
 ```sh
 rm /home/nova-install.lua
-wget https://raw.githubusercontent.com/Madusanka2013-hub/NovaOS/main/install.lua /home/nova-install.lua
+wget https://cdn.jsdelivr.net/gh/Madusanka2013-hub/NovaOS@main/install.lua /home/nova-install.lua
 lua /home/nova-install.lua
 ```
 
 Funktionalen älteren App-Prototyp starten: `lua /home/nova.lua apps`.
 
 Die bisherigen Dateien liegen vor einer Ersetzung als `.bak` vor. Dies ist **kein** Bootloader-Ersatz.
+
+Hinweis: jsDelivr kann @main-Dateien zwischenspeichern. Für reproduzierbare Releases später Commit-SHA oder Versionstag verwenden.
