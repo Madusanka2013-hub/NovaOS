@@ -2,7 +2,7 @@
 -- Keeps OpenOS boot intact. Never installs a new EEPROM or bootloader.
 local fs = require("filesystem")
 local internet = require("internet")
-local base = "https://raw.githubusercontent.com/Madusanka2013-hub/NovaOS/main/"
+local base = "https://cdn.jsdelivr.net/gh/Madusanka2013-hub/NovaOS@main/"
 local home = "/home/novaos"
 assert(fs.isDirectory("/home"), "Writable OpenOS /home required")
 assert(fs.makeDirectory(home) or fs.isDirectory(home), "Cannot create NovaOS directory")
