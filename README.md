@@ -1,21 +1,25 @@
-# NovaOS 0.1.0
+# NovaOS XP Edition 0.3.0
 
-An early graphical system preview for OpenComputers: Modernized on Minecraft 1.21.1.
+Resource-conscious Windows XP-inspired Lua desktop preview for OpenComputers: Modernized 1.21.1.
 
-## Requirements
-OpenOS, a working computer, screen, GPU, keyboard, hard drive, and Internet Card.
+**Requirements:** OpenOS, Internet Card, GPU, screen at least 50x18, keyboard, disk. Works as an OpenOS-hosted app, not a replacement boot OS.
 
-## Installation (inside OpenOS)
-```
-wget https://raw.githubusercontent.com/Madusanka2013-hub/NovaOS/main/install.lua /home/nova-install.lua
+## Install
+```sh
+wget https://cdn.jsdelivr.net/gh/Madusanka2013-hub/NovaOS@1918d2329580934c209deff3b675ff7382b5b9db/install.lua /home/nova-install.lua
 lua /home/nova-install.lua
 lua /home/nova.lua
 ```
+Remove the old /home/nova-install.lua before downloading if wget says it already exists.
 
-This preview does not replace OpenOS or the EEPROM. It installs to /home/novaos and creates /home/nova.lua.
+## Apps
+Start menu, XP-like window borders, taskbar, file explorer, My Documents, terminal, temporary Notepad, control panel and free-memory monitor.
 
-## Navigation
-Use keys 1-5 to select views, Q to quit from a non-terminal view. Type `exit` in Terminal to quit. Commands: help, pwd, ls, cd, cat, clear, about, reboot, exit.
+## Controls
+Click desktop icons, green START or title bar controls. Drag title bars to move. Keyboard 1-7 opens an app when not entering text. Ctrl+C exits via OpenOS interrupt.
 
-## Notes
-This is an untested alpha preview. Please report any error messages from the Minecraft computer. A Tier 2+ GPU/screen is recommended.
+## Limitations
+Notepad text is currently session-only. The clock displays session uptime, not world time. No actual multitasking, persistent desktop settings, full filesystem operations or independent boot kernel yet. This is an untested in-game alpha.
+
+## Performance
+Event-driven rendering, no animation or image assets. Redraws happen on input and minute updates. Maximum four app windows.
