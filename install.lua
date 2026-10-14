@@ -1,9 +1,9 @@
--- NovaOS versioned installer/updater 0.8.0 (OpenOS).
+-- NovaOS versioned installer/updater 0.9.0 (OpenOS).
 -- Run: lua /home/nova-install.lua [install|status|rollback|force]
 -- Runtime versions stored under /home/novaos/versions/<version>/
 local fs = require("filesystem")
 local internet = require("internet")
-local VERSION = "0.8.0"
+local VERSION = "0.9.0"
 local URL = "https://cdn.jsdelivr.net/gh/Madusanka2013-hub/NovaOS@main/"
 local ROOT = "/home/novaos"
 local VERSIONS = ROOT .. "/versions"
@@ -30,7 +30,7 @@ local function version(s)
 end
 local function installDir(v) return VERSIONS .. "/" .. v end
 local function ready(v)
-  return v and exists(installDir(v) .. "/xp_visual07.lua") and exists(installDir(v) .. "/xp05.lua")
+  return v and exists(installDir(v) .. "/xp_core09.lua") and exists(installDir(v) .. "/xp05.lua")
 end
 local function activate(v)
   assert(ready(v), "Version incomplete: " .. tostring(v))
@@ -46,7 +46,7 @@ local v = assert(f:read("*l"),"NovaOS version is missing")
 f:close()
 assert(v:match("^[%w%.%-]+$"),"Invalid NovaOS version")
 local mode = ...
-local name = mode == "apps" and "xp05.lua" or "xp_visual07.lua"
+local name = mode == "apps" and "xp05.lua" or "xp_core09.lua"
 dofile("/home/novaos/versions/" .. v .. "/" .. name)
 ]]
 local function makeLauncher()
@@ -83,7 +83,7 @@ if ready(VERSION) and action ~= "force" then
 end
 
 local files = {
-  {"desktop/xp_visual07.lua", "xp_visual07.lua"},
+  {"desktop/xp_core09.lua", "xp_core09.lua"},
   {"system/xp05.lua", "xp05.lua"}
 }
 local payload = {}

@@ -1,22 +1,20 @@
-# NovaOS – Windows XP Edition
+# NovaOS XP Core 0.9.0
 
-NovaOS is a **Windows-XP-inspired desktop project for OpenComputers Modernized 1.21.1 (NeoForge)**, currently hosted within OpenOS.
+NovaOS is currently an OpenOS-hosted XP-style desktop core for OpenComputers Modernized (Minecraft 1.21.1 / NeoForge). **This milestone contains no additional applications.**
 
-**Project direction:** an authentic XP look and interaction model with real graphic assets, responsive rendering, an integrated desktop, start menu, taskbar, window manager and eventually a coherent application runtime. See [ROADMAP.md](ROADMAP.md).
+## Core delivered
+- Separate desktop core `desktop/xp_core09.lua` selected by the versioned launcher.
+- Desktop selection and double-click, click-driven two-column XP-style start menu.
+- Taskbar with per-window buttons, focus changes, minimization and session uptime display.
+- Core window frames with title-bar dragging, maximize/restore and close.
+- Event-driven render loop, redrawing when needed instead of continuous animation.
+- Native image backend detection through an **optional, future** `nova_graphics` component.
 
-## Current status
-The repository still contains **two separate alpha prototypes**, not a completed OS:
+## Graphics limitation
+**Real image icons and a genuine XP wallpaper are NOT rendered yet.** The stock OC GPU uses text cells; this build deliberately removes the fake character/block icon art and shows clean labels instead. The `nova_graphics.drawImage(asset,x,y,w,h)` contract is an integration hook for a NeoForge addon, **not an API currently implemented by OpenComputers Modernized**. An image-capable addon or verified native image API must be implemented before visual parity with XP can be claimed. No Windows XP copyrighted assets are bundled.
 
-- `desktop/xp_visual07.lua`: visual XP-style desktop and start menu. No real image assets or full app runtime yet.
-- `system/xp05.lua`: earlier application prototype with windows, explorer-like view, editor, terminal and system screens. UI still uses text-cell graphics.
-
-The active installer supports both, but **they are not yet merged into a unified desktop**. Do not mistake text-cell artwork for real icons. We are investigating a graphics backend / NeoForge addon for image assets.
-
-## Requirements
-OpenOS, Internet Card with working access to jsDelivr, GPU, screen at least 60x22, keyboard and a writable disk mounted at /home. Requirements may change as graphics support is developed.
-
-## Repeatable versioned install / update (installer 0.8.0)
-Use the **jsDelivr CDN**. Download a fresh installer when a new release is published:
+## Installation (use an immutable commit URL provided with a release)
+Download the versioned installer from jsDelivr, then run:
 
 ```sh
 rm /home/nova-install.lua
@@ -25,25 +23,20 @@ lua /home/nova-install.lua
 lua /home/nova.lua
 ```
 
-Other commands:
+Commands:
 ```sh
 lua /home/nova-install.lua status
 lua /home/nova-install.lua rollback
-lua /home/nova-install.lua force
 lua /home/nova.lua apps
 ```
 
-The installer stores runnable files in `/home/novaos/versions/0.8.0/`, and records the active and previous versions in `current.version` and `previous.version`. Reinstalling the same version is harmless. Updating to a newer release leaves the previous version available for rollback. It downloads all app files and validates Lua syntax before activating. It does **not** replace OpenOS, remove user files or modify legacy `/home/novaos/boot.lua`.
+Note: `@main` on jsDelivr may cache older versions; use the immutable commit URL in the release message. The installer downloads the Lua components from `@main`, so its runtime may be affected by CDN propagation. OpenOS remains installed.
 
-Version 0.8.0 refers to **installer/update infrastructure**, not a completed desktop. CDN branch URLs can be cached; for future immutable releases, pin each published version to a Git commit/tag. No in-game verification has been completed.
+## Development priorities
+1. Design and build an actual GPU image-display addon for OC:M or prove a compatible preexisting API.
+2. Package appropriately licensed or custom-created PNG icons, window skins, cursor and wallpaper.
+3. Implement efficient caching and asset compositing in the backend.
+4. Complete the XP desktop, start menu and taskbar visual implementation.
+5. Only then return to applications and file management.
 
-## Limitations
-- GPU rendering currently uses text cells; no image-backed XP icons.
-- The two prototypes are not integrated.
-- There is no independent kernel, Windows API compatibility or Windows executable support.
-- Runtime behavior has not yet been verified in Minecraft for this update.
-
-## Development
-Implement and validate the hardware/graphics layer first, then complete the XP desktop and taskbar as **Phase 1**. Avoid unrelated new applications until Phase 1 passes manual in-game acceptance testing.
-
-**Note:** jsDelivr caches branch-based links. Fresh changes on main can take time to reach the CDN. For reproducible production releases, use a pinned commit or release tag.
+No in-game execution has been performed by the assistant for this version.
