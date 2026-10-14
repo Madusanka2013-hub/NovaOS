@@ -1,7 +1,7 @@
 -- NovaOS safe installer for OpenOS
 local fs=require("filesystem")
 local internet=require("internet")
-local root="https://raw.githubusercontent.com/Madusanka2013-hub/NovaOS/main/"
+local root="https://cdn.jsdelivr.net/gh/Madusanka2013-hub/NovaOS@main/"
 assert(fs.isDirectory("/home"),"Requires a writable OpenOS /home")
 fs.makeDirectory("/home/novaos")
 local function fetch(name,to)
